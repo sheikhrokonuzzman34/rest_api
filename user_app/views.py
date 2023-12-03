@@ -10,6 +10,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 
+
+
 class UserRegistrationView(APIView):
     permission_classes = [AllowAny]
 
