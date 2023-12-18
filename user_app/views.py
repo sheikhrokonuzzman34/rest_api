@@ -84,7 +84,35 @@ class UserProfileView(APIView):
 #             return Response({'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 #         except Exception as e:
-#             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)       
+#             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
+
+
+from rest_framework.exceptions import ValidationError
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+
+class UserPasswordChangeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+        user = request.user
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+        confirm_password = request.data.get('confirm_password')
+
+        if not user.check_password(current_password):
+            raise ValidationError({'current_password': 'Current password is incorrect.'})
+
+        form = PasswordChangeForm(user, {'new_password1': new_password, 'new_password2': confirm_password})
+        if not form.is_valid():
+            raise ValidationError(form.errors)
+
+        user.set_password(new_password)
+        user.save()
+
+        update_session_auth_hash(request, user)
+
+        return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)    
     
     
     
