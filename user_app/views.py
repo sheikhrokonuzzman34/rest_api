@@ -55,6 +55,39 @@ class UserLoginView(APIView):
             else:
                 return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+from rest_framework.permissions import IsAuthenticated
+from .serializers import UserProfileSerializer
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        user = request.user
+        serializer = UserProfileSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)    
+    
+# class UserProfileView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request, format=None):
+#         try:
+#             if not request.user.is_authenticated:
+#                 raise NotFound(detail="User not found")
+
+#             user = request.user
+#             serializer = UserProfileSerializer(user, context={'request': request})
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+
+#         except NotFound as e:
+#             return Response({'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+#         except Exception as e:
+#             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)       
+    
+    
+    
 
 
 
