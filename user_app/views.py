@@ -87,32 +87,42 @@ class UserProfileView(APIView):
 #             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
 
 
-from rest_framework.exceptions import ValidationError
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
+# views.py
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.hashers import make_password
 
 class UserPasswordChangeView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, format=None):
+    def post(self, request, *args, **kwargs):
         user = request.user
-        current_password = request.data.get('current_password')
+        old_password = request.data.get('old_password')
         new_password = request.data.get('new_password')
-        confirm_password = request.data.get('confirm_password')
 
-        if not user.check_password(current_password):
-            raise ValidationError({'current_password': 'Current password is incorrect.'})
+        if not user.check_password(old_password):
+            return Response({'detail': 'Invalid old password'}, status=status.HTTP_400_BAD_REQUEST)
 
-        form = PasswordChangeForm(user, {'new_password1': new_password, 'new_password2': confirm_password})
-        if not form.is_valid():
-            raise ValidationError(form.errors)
-
-        user.set_password(new_password)
+        user.password = make_password(new_password)
+        print(user.new_password)
         user.save()
 
-        update_session_auth_hash(request, user)
+        return Response({'detail': 'Password changed successfully'}, status=status.HTTP_200_OK)
+    
+    
+class MyUserUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
-        return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)    
+    def put(self, request, *args, **kwargs):
+        user = request.user
+        serializer = UserProfileSerializer(user, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+
+
+    
     
     
     

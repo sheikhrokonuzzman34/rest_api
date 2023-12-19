@@ -78,3 +78,11 @@ class MyUser(AbstractBaseUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
+    
+    
+    
+from django.conf import settings
+
+class UserProfile(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    birth_date = models.DateField(null=True, blank=True)    
