@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'user_app',
     'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_simplejwt',
 ]
 

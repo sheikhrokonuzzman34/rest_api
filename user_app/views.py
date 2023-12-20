@@ -88,25 +88,45 @@ class UserProfileView(APIView):
 
 
 # views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth.hashers import make_password
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.hashers import make_password, check_password
+from .serializers import PasswordChangeSerializer
+from rest_framework.authtoken.models import Token
 
-class UserPasswordChangeView(APIView):
+
+
+class PasswordChangeAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        user = request.user
-        old_password = request.data.get('old_password')
-        new_password = request.data.get('new_password')
+        serializer = PasswordChangeSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            old_password = serializer.validated_data.get('old_password')
+            new_password = serializer.validated_data.get('new_password')
 
-        if not user.check_password(old_password):
-            return Response({'detail': 'Invalid old password'}, status=status.HTTP_400_BAD_REQUEST)
+            # Check if the old password is correct
+            if user.check_password(old_password):
+                return Response({'error': 'Invalid old password'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user.password = make_password(new_password)
-        print(user.new_password)
-        user.save()
+            # Change the password and save the user
+            user.password = make_password(new_password)
+            user.save()
 
-        return Response({'detail': 'Password changed successfully'}, status=status.HTTP_200_OK)
+            # Optionally, you may want to invalidate existing tokens
+            Token.objects.filter(user=user).delete()
+
+            return Response({'success': 'Password changed successfully'}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
     
     
 class MyUserUpdateAPIView(APIView):

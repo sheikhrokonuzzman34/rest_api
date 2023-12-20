@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import MyUser
 
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
@@ -45,3 +44,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = MyUser
         fields = ('id', 'name', 'email', 'tc')    
+        
+        
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)        
