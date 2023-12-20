@@ -97,6 +97,24 @@ from django.contrib.auth.hashers import make_password, check_password
 from .serializers import PasswordChangeSerializer
 from rest_framework.authtoken.models import Token
 
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_str  # Update this line
+from django.utils.http import urlsafe_base64_decode
+from rest_framework import serializers
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.hashers import make_password, check_password
+
+# Your other code...
+
+
 
 
 class PasswordChangeAPIView(APIView):
@@ -123,23 +141,70 @@ class PasswordChangeAPIView(APIView):
             return Response({'success': 'Password changed successfully'}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+     
+        
+        
 
 
 
-
+from django.contrib import messages
+from .models import MyUser
+from .serializers import MyUserSerializer
     
     
-class MyUserUpdateAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+class UserList(APIView):
+    def get(self, request):
+        users = MyUser.objects.all()
+        serializer = MyUserSerializer(users, many=True)
+        return Response(serializer.data)
 
-    def put(self, request, *args, **kwargs):
-        user = request.user
-        serializer = UserProfileSerializer(user, data=request.data, partial=True)
-
+    def post(self, request):
+        serializer = MyUserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+            messages.success(request, 'User created successfully.')
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        messages.error(request, 'Failed to create user.')
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserDetail(APIView):
+    permission_classes = [IsAuthenticated]
+    def get_object(self, pk):
+        try:
+            return MyUser.objects.get(pk=pk)
+        except MyUser.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        user = self.get_object(pk)
+        if user:
+            serializer = MyUserSerializer(user)
+            return Response(serializer.data)
+        messages.error(request, 'User not found.')
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, pk):
+        user = self.get_object(pk)
+        if user:
+            serializer = MyUserSerializer(user, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                messages.success(request, 'User updated successfully.')
+                return Response(serializer.data)
+            messages.error(request, 'Failed to update user.')
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        messages.error(request, 'User not found.')
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, pk):
+        user = self.get_object(pk)
+        if user:
+            user.delete()
+            messages.success(request, 'User deleted successfully.')
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        messages.error(request, 'User not found.')
+        return Response(status=status.HTTP_404_NOT_FOUND)    
 
 
     
