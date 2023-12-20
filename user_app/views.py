@@ -4,12 +4,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from .serializers import UserSerializer, UserLoginSerializer
+from .serializers import *
+from .models import *
 
 
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.hashers import make_password, check_password
+from django.contrib import messages
+
 
 
 
@@ -57,8 +63,7 @@ class UserLoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     
-from rest_framework.permissions import IsAuthenticated
-from .serializers import UserProfileSerializer
+
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -87,32 +92,6 @@ class UserProfileView(APIView):
 #             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
 
 
-# views.py
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authtoken.models import Token
-from django.contrib.auth.hashers import make_password, check_password
-from .serializers import PasswordChangeSerializer
-from rest_framework.authtoken.models import Token
-
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.encoding import force_str  # Update this line
-from django.utils.http import urlsafe_base64_decode
-from rest_framework import serializers
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authtoken.models import Token
-from django.contrib.auth.hashers import make_password, check_password
-
-# Your other code...
 
 
 
@@ -144,13 +123,10 @@ class PasswordChangeAPIView(APIView):
         
      
         
-        
 
 
 
-from django.contrib import messages
-from .models import MyUser
-from .serializers import MyUserSerializer
+
     
     
 class UserList(APIView):
