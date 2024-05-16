@@ -123,11 +123,6 @@ class PasswordChangeAPIView(APIView):
         
      
         
-
-
-
-
-    
     
 class UserList(APIView):
     def get(self, request):
@@ -187,9 +182,6 @@ class UserDetail(APIView):
     
     
     
-
-
-
 # Create your views here.
 
 def home(request):
